@@ -1,3 +1,14 @@
+const { v4: uuidV4 } = require('uuid');
+
+/**
+ * {
+ * 		name
+ * 		socketID
+ * 		userId
+ * }
+ */
+const connectedUsers = [];
+
 const socket = async (http, server) => {
 	io = require('socket.io')(http, {
 		cors: {
@@ -9,11 +20,12 @@ const socket = async (http, server) => {
 		console.log(`A connection was made from ${socket.handshake.address}`);
 		socket.on('create-something', (data, cb) => {
 			console.log(data);
-			cb('created something');
 		});
 
 		socket.on('disconnect', (reason) => {
-			console.log(reason);
+			console.log(
+				`Client disconnected from ${socket.handshake.address} (${reason})`
+			);
 		});
 	});
 
