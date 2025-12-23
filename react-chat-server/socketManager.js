@@ -17,16 +17,18 @@ const socket = async (http, server) => {
 		},
 	});
 
-	const addNewUser = (socketId) => {
+	const addNewUser = (data) => {
 		const newId = uuidV4();
 		const newPublicId = uuidV4();
-		connectedUsers.push({
+		const { socketId, name } = data;
+		const newUser = {
 			socketId,
-			userId: newId,
+			id: newId,
 			publicId: newPublicId,
-			name: '',
-		});
-		return newId;
+			name: name || '',
+		};
+		connectedUsers.push(newUser);
+		return { ...newUser };
 	};
 
 	io.on('connection', (socket) => {
@@ -35,27 +37,26 @@ const socket = async (http, server) => {
 		socket.join('chat-room');
 
 		socket.on('request-new-user-id', (cb) => {
-			const newId = uuidV4();
-			connectedUsers.push({
-				name: '',
-				socketId: socket.id,
-				userId: newId,
-			});
-			cb({ id: newId });
-			console.log(connectedUsers);
+			const user = connectedUsers.find((u) => u.socketId === socket.id);
+			if (!user) {
+				const newUser = addNewUser({ socketId: socket.id, name: '' });
+				cb({ id: newUser.id });
+			} else {
+				cb({ id: user.id });
+			}
 		});
 
 		socket.on('rejoin-server', (data, cb) => {
-			//the user must send their ID - if not, generate a new user
+			//the user must send their private ID - if not, generate a new user
 			if (!data.id) {
-				const newId = addNewUser(socket.id);
+				const newId = addNewUser({ socketId: socket.id, name: '' }).id;
 				return cb({ id: newId });
 			}
 			//the id was sent here - see if it matches something in the array
 			else {
 				//update the socket id if it matches something
-				const user = connectedUsers.find((u) => {
-					if (u.userId === data.id) {
+				let user = connectedUsers.find((u) => {
+					if (u.id === data.id) {
 						u.socketId = socket.id;
 						return true;
 					}
@@ -63,7 +64,8 @@ const socket = async (http, server) => {
 				});
 				//if not, make a new user for them
 				if (!user) {
-					const newId = addNewUser(socket.id);
+					user = addNewUser({ socketId: socket.id });
+					const newId = user.id;
 					return cb({ id: newId });
 				}
 				return cb({ name: user.name });
@@ -71,46 +73,32 @@ const socket = async (http, server) => {
 		});
 
 		socket.on('set-name', (data, cb) => {
-			console.log(data);
 			if (!data.name)
 				return cb({ status: 'error', message: 'You must enter a name' });
 			else {
-				const user = connectedUsers.find((u) => {
+				let user = connectedUsers.find((u) => {
 					if (u.socketId === socket.id) {
 						u.name = data.name;
 						return true;
 					}
 					return false;
 				});
-				if (!user) {
-					const newId = addNewUser(socket.id);
-					connectedUsers.find((u) => {
-						if (u.socketId === socket.id) {
-							u.name = data.name;
-							return true;
-						}
-						return false;
-					});
-					return cb({
-						id: newId,
-						status: 'success',
-						name: data.name,
-					});
-				}
-				return cb({
-					id: user.id,
+				if (!user) user = addNewUser({ socketId: socket.id, name: data.name });
+				cb({
 					status: 'success',
-					name: user.name,
+					name: data.name,
+				});
+				socket.to('chat-room').emit('set-name', {
+					publicId: user.publicId,
+					name: data.name,
 				});
 			}
 		});
 
 		socket.on('send-message', (data, cb) => {
-			console.log(`New message`);
 			const user = connectedUsers.find((u) => u.socketId === socket.id);
 			if (!user) return cb({ status: 'fail', message: 'User not found' });
 			cb({ status: 'success' });
-			console.log(data);
 			socket.to('chat-room').emit('new-message', {
 				from: user.name,
 				publicId: user.publicId,

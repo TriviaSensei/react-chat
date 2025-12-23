@@ -2,7 +2,7 @@ import Message from './Message/Message';
 import { useContext, useEffect } from 'react';
 import { MessagesContext } from '../../../contexts/MessagesContext';
 export default function ConversationContainer() {
-	const { messages, setMessages } = useContext(MessagesContext);
+	const { messages } = useContext(MessagesContext);
 	useEffect(() => {
 		const cb = document.querySelector('#chat-bottom');
 		if (cb) cb.scrollIntoView({ behavior: 'smooth' });

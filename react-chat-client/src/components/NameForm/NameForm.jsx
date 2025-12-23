@@ -10,7 +10,9 @@ export default function NameForm() {
 	const [value, setValue] = useState('');
 	const changeName = () => {
 		socket.emit('set-name', { name: value }, (data) => {
-			if (data.status === 'success') setName(data.name);
+			if (data.status === 'success') {
+				setName(data.name);
+			}
 		});
 	};
 	const setNameEnter = (e) => {
