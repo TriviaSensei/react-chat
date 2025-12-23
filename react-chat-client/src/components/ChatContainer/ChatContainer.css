@@ -41,7 +41,8 @@
 				}
 			}
 			.message.from-me.pending .contents {
-				background-color: #6f7cbd;
+				background-color: white;
+				color: black;
 			}
 		}
 	}

@@ -19,6 +19,7 @@ export default function App() {
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
 	useEffect(() => {
+		console.log('rendering');
 		function onConnect() {
 			setIsConnected(true);
 			let userId = localStorage.getItem(lsItem);
@@ -44,16 +45,16 @@ export default function App() {
 		function onMessage(data) {
 			console.log(messages);
 			console.log(data);
-			setMessages([
-				...messages,
-				{
-					sender: data.from,
-					fromMe: false,
-					pending: false,
-					senderId: data.publicId,
-					text: data.message,
-				},
-			]);
+			const newMessage = {
+				sender: data.from,
+				fromMe: false,
+				pending: false,
+				senderId: data.publicId,
+				text: data.message,
+			};
+			setMessages((prev) => {
+				return [...prev, newMessage];
+			});
 		}
 
 		socket.on('connect', onConnect);
