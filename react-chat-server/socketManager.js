@@ -10,10 +10,15 @@ const { v4: uuidV4 } = require('uuid');
  */
 const connectedUsers = [];
 
+const corsOrigin =
+	process.env.NODE_ENV === 'production'
+		? 'https://main.d2d72vc7isj8gz.amplifyapp.com/'
+		: 'http://localhost:5173';
+
 const socket = async (http, server) => {
 	io = require('socket.io')(http, {
 		cors: {
-			origin: 'http://localhost:5173',
+			origin: corsOrigin,
 		},
 	});
 
@@ -109,7 +114,7 @@ const socket = async (http, server) => {
 		socket.on('disconnect', (reason) => {
 			socket.leave('chat-room');
 			console.log(
-				`Client disconnected from ${socket.handshake.address} (${reason})`
+				`Client disconnected from ${socket.handshake.address} (${reason})`,
 			);
 		});
 	});

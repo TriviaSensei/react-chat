@@ -13,9 +13,10 @@ import './App.css';
 const lsItem = 'react-chat-id';
 
 export default function App() {
+	console.log(process.env.NODE_ENV);
+
 	const [name, setName] = useState('');
 	const [messages, setMessages] = useState([]);
-
 	const [isConnected, setIsConnected] = useState(socket.connected);
 
 	useEffect(() => {
