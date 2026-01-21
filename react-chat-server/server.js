@@ -13,10 +13,11 @@ const http = require('http').Server(app);
 // const socketManager = require('./mvc/utils/socketManager')(http, server);
 const socketManager = require('./socketManager')(http, server);
 app.get('/api', (req, res) => {
+	const date = Date.now().toLocaleString();
 	res.status(200).json({
 		status: 'OK',
 		data: {
-			message: 'Hello from AWS!',
+			message: `Hello from AWS, on ${date}. Server is listening on port ${port}`,
 		},
 	});
 });
